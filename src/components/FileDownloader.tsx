@@ -270,7 +270,7 @@ export default function FileDownloader({
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-">
         {files.map((file) => (
           <motion.div
             key={file.id}
@@ -279,7 +279,7 @@ export default function FileDownloader({
             className="bg-white 2 border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all overflow-hidden"
           >
             <div className="p-6">
-              <div className="flex items-start space-x-4">
+              <div className="flex items-start space-x-3">
                 {/* Icône du fichier */}
                 <div className={`flex-shrink-0 ${
                   file.type === 'apk' ? 'text-green-600' : 'text-blue-600'
@@ -288,7 +288,7 @@ export default function FileDownloader({
                 </div>
 
                 {/* Informations du fichier */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <h3 className="text-lg font-semibold text-gray-800 truncate">
                     {file.name}
                   </h3>
