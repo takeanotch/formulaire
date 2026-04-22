@@ -645,6 +645,9 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import FileDownloader from '@/components/FileDownloader'
+import ImageLink from '@/components/ImageLink';
+
+
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -856,6 +859,13 @@ export default function Home() {
               />
             </div>
                     <FileDownloader/>
+                      <ImageLink
+        src="/taptouche.png"
+        alt="tap Touche image"
+        href="https://app.taptouche.com/"
+        width={170}
+       
+      />
 
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Déjà soumis !</h1>
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -893,6 +903,14 @@ export default function Home() {
             Votre réponse a été enregistrée avec succès.
           </p>
             <FileDownloader/>
+  
+      <ImageLink
+        src="/taptouche.png"
+        alt="tap Touche image"
+        href="https://app.taptouche.com/"
+        width={170}
+       
+      />
         </motion.div>
       </main>
     )
