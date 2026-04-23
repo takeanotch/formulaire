@@ -163,7 +163,7 @@ export default function Home() {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-2xl w-full max-w-md shadow-2xl"
+          className="bg-white -2xl w-full max-w-md shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-6">
@@ -176,7 +176,7 @@ export default function Home() {
                     onSelect(option.value)
                     onClose()
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
+                  className={`w-full text-left px-4 py-3 -xl transition-all ${
                     selectedValue === option.value
                       ? 'bg-blue-50 text-blue-600 font-medium border-2 border-blue-500'
                       : 'hover:bg-gray-50 text-gray-700 border-2 border-transparent'
@@ -215,9 +215,9 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center"
+          className="bg-white -2xl shadow-lg p-8 max-w-md w-full text-center"
         >
-          <div className="w-[120px] mx-auto bg-white rounded-xl flex items-center justify-center">
+          <div className="w-[120px] mx-auto bg-white -xl flex items-center justify-center">
             <Image 
               src="/logo.png" 
               alt="Logo" 
@@ -239,7 +239,7 @@ export default function Home() {
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Déjà soumis !</h1>
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-blue-100 -full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -261,9 +261,9 @@ export default function Home() {
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-white rounded-2xl shadow-lg p-4 max-w-md w-full text-center"
+          className=" p-8 max-w-md w-full text-center"
         >
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-green-100 -full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -278,7 +278,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
+    <main className="min-h-screen bg-gradient-to-">
       {/* Modals de sélection */}
       <AnimatePresence>
         {showCpuModal && (
@@ -341,12 +341,12 @@ export default function Home() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 relative"
+        className="max-w-4xl mx-auto bg-white p-2 md:p-8 relative"
       >
         {/* En-tête avec logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 ">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-[120px] bg-white rounded-xl flex items-center justify-center">
+            <div className="w-[120px] bg-white -xl flex items-center justify-center">
               <Image 
                 src="/logo.png" 
                 alt="Logo" 
@@ -378,9 +378,9 @@ export default function Home() {
         
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Spécifications matérielles */}
-          <div className="bg-gray-50 p-6 rounded-xl">
+          <div className="bg-gray-50 p-6 -xl">
             <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-              <span className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mr-3 text-sm">🖥️</span>
+              <span className="w-8 h-8 bg-blue-600 text-white -full flex items-center justify-center mr-3 text-sm">🖥️</span>
               Spécifications de votre machine
             </h2>
 
@@ -393,7 +393,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowCpuModal(true)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
+                  className="w-full px-4 py-3 border-2 border-gray-200 -xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
                 >
                   {formData.cpuCores ? (
                     <span className="text-gray-700">
@@ -413,7 +413,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowRamModal(true)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
+                  className="w-full px-4 py-3 border-2 border-gray-200 -xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
                 >
                   {formData.ram ? (
                     <span className="text-gray-700">
@@ -433,7 +433,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowStorageSpaceModal(true)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
+                  className="w-full px-4 py-3 border-2 border-gray-200 -xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
                 >
                   {formData.storageSpace ? (
                     <span className="text-gray-700">
@@ -453,7 +453,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowStorageTypeModal(true)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
+                  className="w-full px-4 py-3 border-2 border-gray-200 -xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
                 >
                   {formData.storageType ? (
                     <span className="text-gray-700">
@@ -473,7 +473,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowArchitectureModal(true)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
+                  className="w-full px-4 py-3 border-2 border-gray-200 -xl focus:outline-none focus:border-blue-500 transition-all bg-white hover:border-gray-300 text-left"
                 >
                   {formData.architecture ? (
                     <span className="text-gray-700">
@@ -491,7 +491,7 @@ export default function Home() {
                   Votre processeur supporte-t-il la virtualisation ? <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
+                  <label className="flex items-center p-4 border-2 border-gray-200 -xl cursor-pointer hover:border-blue-300 transition-all">
                     <input
                       type="radio"
                       name="virtualization"
@@ -503,7 +503,7 @@ export default function Home() {
                     />
                     <span className="ml-3 text-gray-700">✅ Oui</span>
                   </label>
-                  <label className="flex items-center p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 transition-all">
+                  <label className="flex items-center p-4 border-2 border-gray-200 -xl cursor-pointer hover:border-blue-300 transition-all">
                     <input
                       type="radio"
                       name="virtualization"
@@ -524,7 +524,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-xl text-sm flex items-start"
+              className="bg-red-50 border-2 border-red-200 text-red-700 p-4 -xl text-sm flex items-start"
             >
               <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -537,7 +537,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-md hover:shadow-lg text-lg"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 px-4 -xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-md hover:shadow-lg text-lg"
           >
             {loading ? (
               <span className="flex items-center justify-center">
