@@ -1,69 +1,4 @@
-// import { NextRequest, NextResponse } from 'next/server'
-// import { supabase } from '@/lib/supabase'
-
-// export async function POST(request: NextRequest) {
-//   try {
-//     const body = await request.json()
-//     const { studentName, hasComputer, computerType, fingerprint } = body
-
-//     // Get IP address
-//     const ip = request.headers.get('x-forwarded-for') || 
-//                request.headers.get('x-real-ip') || 
-//                'unknown'
-
-//     // Check if already submitted by fingerprint
-//     const { data: existingByFingerprint } = await supabase
-//       .from('survey_responses')
-//       .select('id')
-//       .eq('fingerprint', fingerprint)
-//       .single()
-
-//     if (existingByFingerprint) {
-//       return NextResponse.json(
-//         { error: 'Already submitted' },
-//         { status: 409 }
-//       )
-//     }
-
-//     // Check if already submitted by IP (last 24h)
-//     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-//     const { data: existingByIp } = await supabase
-//       .from('survey_responses')
-//       .select('id')
-//       .eq('ip_address', ip)
-//       .gte('created_at', twentyFourHoursAgo.toISOString())
-//       .single()
-
-//     if (existingByIp) {
-//       return NextResponse.json(
-//         { error: 'Already submitted from this IP recently' },
-//         { status: 409 }
-//       )
-//     }
-
-//     // Insert new response
-//     const { error } = await supabase
-//       .from('survey_responses')
-//       .insert({
-//         student_name: studentName,
-//         has_computer: hasComputer,
-//         computer_type: computerType || null,
-//         ip_address: ip,
-//         fingerprint: fingerprint
-//       })
-
-//     if (error) throw error
-
-//     return NextResponse.json({ success: true })
-//   } catch (error) {
-//     console.error('Submission error:', error)
-//     return NextResponse.json(
-//       { error: 'Internal server error' },
-//       { status: 500 }
-//     )
-//   }
-// }
-
+// app/api/submit/route.ts
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { headers } from 'next/headers'
@@ -72,23 +7,23 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     
-    // Attendre que headers() soit résolu
     const headersList = await headers()
     
     const {
-      studentName,
-      hasComputer,
-      computerType,
-      planToGetComputer,
-      expectedDate,
-      withoutComputerPlan,
+      cpuCores,
+      ram,
+      storageSpace,
+      storageType,
+      architecture,
+      virtualization,
+      compatible,
       fingerprint
     } = body
 
     // Validation
-    if (!studentName || hasComputer === undefined || !fingerprint) {
+    if (!cpuCores || !ram || !storageSpace || !storageType || !architecture || virtualization === undefined || !fingerprint) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Tous les champs sont obligatoires' },
         { status: 400 }
       )
     }
@@ -102,30 +37,29 @@ export async function POST(request: Request) {
 
     if (existing) {
       return NextResponse.json(
-        { error: 'Already submitted' },
+        { error: 'Vous avez déjà soumis une réponse' },
         { status: 409 }
       )
     }
 
-    // Récupérer l'IP et l'User-Agent
+    // Récupérer l'IP
     const ipAddress = headersList.get('x-forwarded-for')?.split(',')[0] || 
                       headersList.get('x-real-ip') || 
                       'unknown'
-    const userAgent = headersList.get('user-agent') || 'unknown'
 
-    // Insérer la nouvelle réponse
+    // Insérer la nouvelle réponse SANS user_agent
     const { data, error } = await supabase
       .from('survey_responses')
       .insert({
-        student_name: studentName,
-        has_computer: hasComputer,
-        computer_type: computerType || null,
-        plan_to_get_computer: planToGetComputer || null,
-        expected_date: expectedDate || null,
-        without_computer_plan: withoutComputerPlan || null,
+        cpu_cores: cpuCores,
+        ram: ram,
+        storage_space: storageSpace,
+        storage_type: storageType,
+        architecture: architecture,
+        virtualization: virtualization,
+        compatible: compatible,
         fingerprint: fingerprint,
-        ip_address: ipAddress,
-        user_agent: userAgent
+        ip_address: ipAddress
       })
       .select()
       .single()
@@ -133,19 +67,22 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Supabase error:', error)
       return NextResponse.json(
-        { error: 'Failed to save response' },
+        { error: 'Erreur lors de l\'enregistrement' },
         { status: 500 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      data: { id: data.id }
+      data: { 
+        id: data.id,
+        compatible: data.compatible
+      }
     })
   } catch (error) {
     console.error('Server error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Erreur interne du serveur' },
       { status: 500 }
     )
   }

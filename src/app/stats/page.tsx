@@ -1,3 +1,4 @@
+// app/admin/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -23,34 +24,36 @@ import {
   RefreshCw,
   LogOut,
   Monitor,
-  Laptop,
-  Users
+  Cpu,
+  HardDrive
 } from 'lucide-react'
 import Link from 'next/link'
 
 interface SurveyResponse {
   id: string
   created_at: string
-  student_name: string
-  has_computer: boolean
-  computer_type: string | null
-  plan_to_get_computer: string | null
-  expected_date: string | null
-  without_computer_plan: string | null
+  cpu_cores: string
+  ram: string
+  storage_space: string
+  storage_type: string
+  architecture: string
+  virtualization: boolean
   fingerprint: string
+  ip_address: string
 }
 
 interface Stats {
   total: number
-  hasComputer: number
-  noComputer: number
   uniqueVisitors: number
-  computerTypes: { name: string; value: number }[]
-  plans: { name: string; value: number }[]
+  cpuDistribution: { name: string; value: number }[]
+  ramDistribution: { name: string; value: number }[]
+  storageTypeDistribution: { name: string; value: number }[]
+  architectureDistribution: { name: string; value: number }[]
+  virtualizationSupport: { name: string; value: number }[]
   recentResponses: SurveyResponse[]
 }
 
-const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899']
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -111,63 +114,110 @@ export default function AdminDashboard() {
 
   const processStats = (responses: SurveyResponse[]): Stats => {
     const total = responses.length
-    const hasComputer = responses.filter(r => r.has_computer).length
-    const noComputer = total - hasComputer
     const uniqueVisitors = new Set(responses.map(r => r.fingerprint)).size
 
-    // Types d'ordinateurs
-    const computerTypesMap: Record<string, number> = {}
-    responses
-      .filter(r => r.has_computer && r.computer_type)
-      .forEach(r => {
-        const type = formatComputerType(r.computer_type!)
-        computerTypesMap[type] = (computerTypesMap[type] || 0) + 1
-      })
-    const computerTypes = Object.entries(computerTypesMap)
+    // Distribution CPU
+    const cpuMap: Record<string, number> = {}
+    responses.forEach(r => {
+      const cpu = formatCpu(r.cpu_cores)
+      cpuMap[cpu] = (cpuMap[cpu] || 0) + 1
+    })
+    const cpuDistribution = Object.entries(cpuMap)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
 
-    // Plans d'acquisition
-    const plansMap: Record<string, number> = {}
-    responses
-      .filter(r => !r.has_computer && r.plan_to_get_computer)
-      .forEach(r => {
-        const plan = formatPlan(r.plan_to_get_computer!)
-        plansMap[plan] = (plansMap[plan] || 0) + 1
-      })
-    const plans = Object.entries(plansMap)
+    // Distribution RAM
+    const ramMap: Record<string, number> = {}
+    responses.forEach(r => {
+      const ram = formatRam(r.ram)
+      ramMap[ram] = (ramMap[ram] || 0) + 1
+    })
+    const ramDistribution = Object.entries(ramMap)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
+
+    // Distribution Stockage
+    const storageTypeMap: Record<string, number> = {}
+    responses.forEach(r => {
+      const storage = formatStorageType(r.storage_type)
+      storageTypeMap[storage] = (storageTypeMap[storage] || 0) + 1
+    })
+    const storageTypeDistribution = Object.entries(storageTypeMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+
+    // Distribution Architecture
+    const archMap: Record<string, number> = {}
+    responses.forEach(r => {
+      const arch = formatArchitecture(r.architecture)
+      archMap[arch] = (archMap[arch] || 0) + 1
+    })
+    const architectureDistribution = Object.entries(archMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+
+    // Support virtualisation
+    const virtSupport = responses.filter(r => r.virtualization).length
+    const noVirtSupport = total - virtSupport
+    const virtualizationSupport = [
+      { name: 'Supportée', value: virtSupport },
+      { name: 'Non supportée', value: noVirtSupport }
+    ]
 
     return {
       total,
-      hasComputer,
-      noComputer,
       uniqueVisitors,
-      computerTypes,
-      plans,
+      cpuDistribution,
+      ramDistribution,
+      storageTypeDistribution,
+      architectureDistribution,
+      virtualizationSupport,
       recentResponses: responses.slice(0, 120)
     }
   }
 
-  const formatComputerType = (type: string): string => {
+  const formatCpu = (cpu: string): string => {
+    const cpus: Record<string, string> = {
+      '2_cores': '2 cœurs',
+      '4_cores': '4 cœurs',
+      '6_cores': '6 cœurs',
+      '8_cores': '8 cœurs',
+      '8plus_cores': '8+ cœurs',
+      'unknown': 'Inconnu'
+    }
+    return cpus[cpu] || cpu
+  }
+
+  const formatRam = (ram: string): string => {
+    const rams: Record<string, string> = {
+      '4GB': '4 Go',
+      '8GB': '8 Go',
+      '16GB': '16 Go',
+      '32GB': '32 Go',
+      '32GB_plus': '32 Go+',
+      'unknown': 'Inconnu'
+    }
+    return rams[ram] || ram
+  }
+
+  const formatStorageType = (type: string): string => {
     const types: Record<string, string> = {
-      'laptop_windows': 'Windows',
-      'laptop_mac': 'MacBook',
-      'laptop_linux': 'Linux',
-      'laptop_chrome': 'Chromebook',
-      'laptop_other': 'Autre'
+      'SSD': 'SSD',
+      'HDD': 'HDD',
+      'NVMe': 'NVMe',
+      'unknown': 'Inconnu'
     }
     return types[type] || type
   }
 
-  const formatPlan = (plan: string): string => {
-    const plans: Record<string, string> = {
-      'yes_soon': 'Prochainement',
-      'yes_later': 'Plus tard',
-      'no': 'Pas prévu'
+  const formatArchitecture = (arch: string): string => {
+    const archs: Record<string, string> = {
+      '64-bit': '64 bits',
+      '32-bit': '32 bits',
+      'ARM': 'ARM',
+      'unknown': 'Inconnu'
     }
-    return plans[plan] || plan
+    return archs[arch] || arch
   }
 
   const exportToExcel = async () => {
@@ -184,11 +234,13 @@ export default function AdminDashboard() {
 
       const excelData = responses.map(r => ({
         'Date': new Date(r.created_at).toLocaleString('fr-FR'),
-        'Nom': r.student_name,
-        'A un ordinateur': r.has_computer ? 'Oui' : 'Non',
-        'Type': r.computer_type ? formatComputerType(r.computer_type) : '-',
-        'Plan': r.plan_to_get_computer ? formatPlan(r.plan_to_get_computer) : '-',
-        'Solution sans ordi': r.without_computer_plan || '-'
+        'CPU': formatCpu(r.cpu_cores),
+        'RAM': formatRam(r.ram),
+        'Stockage Espace': r.storage_space,
+        'Stockage Type': formatStorageType(r.storage_type),
+        'Architecture': formatArchitecture(r.architecture),
+        'Virtualisation': r.virtualization ? 'Oui' : 'Non',
+        'IP': r.ip_address || '-'
       }))
 
       const ws = XLSX.utils.json_to_sheet(excelData)
@@ -202,7 +254,6 @@ export default function AdminDashboard() {
     }
   }
 
-  // Tooltip personnalisé sans erreur TypeScript
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -217,7 +268,6 @@ export default function AdminDashboard() {
     return null
   }
 
-  // Page de connexion
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -228,8 +278,8 @@ export default function AdminDashboard() {
         >
           <div className="bg-white border border-gray-200 p-8">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-light tracking-wide text-gray-900">Administration</h2>
-              <p className="text-sm text-gray-500 mt-1">Accès dashboard sondage</p>
+              <h2 className="text-2xl font-light tracking-wide text-gray-900">Administration (MOT DE PASSE : admin2024)</h2>
+              <p className="text-sm text-gray-500 mt-1">Dashboard sondage configuration</p>
             </div>
             
             <form onSubmit={handleLogin} className="space-y-4">
@@ -272,7 +322,6 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -288,7 +337,7 @@ export default function AdminDashboard() {
                   Dashboard Sondage
                 </h1>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {stats?.total || 0} réponses
+                  {stats?.total || 0} participations
                 </p>
               </div>
             </div>
@@ -316,49 +365,34 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {stats && (
           <>
-            {/* Stats Cards - Essentiel uniquement */}
-            <div className="grid grid-cols-4 gap-3 mb-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-white border border-gray-200 p-4">
                 <div className="text-2xl font-light">{stats.total}</div>
                 <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                  <Users size={12} />
-                  Total réponses
-                </div>
-              </div>
-              <div className="bg-green-50 border border-green-200 p-4">
-                <div className="text-2xl font-light text-green-700">{stats.hasComputer}</div>
-                <div className="text-xs text-green-600 flex items-center gap-1 mt-1">
                   <Monitor size={12} />
-                  Avec ordinateur
-                </div>
-              </div>
-              <div className="bg-yellow-50 border border-yellow-200 p-4">
-                <div className="text-2xl font-light text-yellow-700">{stats.noComputer}</div>
-                <div className="text-xs text-yellow-600 flex items-center gap-1 mt-1">
-                  <Laptop size={12} />
-                  Sans ordinateur
+                  Participations totales
                 </div>
               </div>
               <div className="bg-purple-50 border border-purple-200 p-4">
-                <div className="text-2xl font-light text-purple-700">
-                  {((stats.hasComputer / stats.total) * 100).toFixed(1)}%
-                </div>
-                <div className="text-xs text-purple-600 mt-1">Taux possession</div>
+                <div className="text-2xl font-light text-purple-700">{stats.uniqueVisitors}</div>
+                <div className="text-xs text-purple-600 mt-1">Visiteurs uniques</div>
               </div>
             </div>
 
-            {/* Charts */}
+            {/* Charts Grid */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {/* Doughnut - Types d'ordinateurs */}
+              {/* CPU Distribution */}
               <div className="bg-white border border-gray-200 p-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">
-                  Types d'ordinateurs
+                <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                  <Cpu size={16} />
+                  Distribution CPU
                 </h3>
-                {stats.computerTypes.length > 0 ? (
+                {stats.cpuDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
-                        data={stats.computerTypes}
+                        data={stats.cpuDistribution}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -366,7 +400,7 @@ export default function AdminDashboard() {
                         paddingAngle={2}
                         dataKey="value"
                       >
-                        {stats.computerTypes.map((entry, index) => (
+                        {stats.cpuDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -385,16 +419,17 @@ export default function AdminDashboard() {
                 )}
               </div>
 
-              {/* Doughnut - Plans d'acquisition */}
+              {/* RAM Distribution */}
               <div className="bg-white border border-gray-200 p-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">
-                  Plans d'acquisition
+                <h3 className="text-sm font-medium text-gray-700 mb-4 flex items-center gap-2">
+                  <HardDrive size={16} />
+                  Distribution RAM
                 </h3>
-                {stats.plans.length > 0 ? (
+                {stats.ramDistribution.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
-                        data={stats.plans}
+                        data={stats.ramDistribution}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -402,7 +437,79 @@ export default function AdminDashboard() {
                         paddingAngle={2}
                         dataKey="value"
                       >
-                        {stats.plans.map((entry, index) => (
+                        {stats.ramDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip content={<CustomTooltip />} />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        formatter={(value) => <span className="text-xs text-gray-600">{value}</span>}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+                    Aucune donnée
+                  </div>
+                )}
+              </div>
+
+              {/* Storage Type Distribution */}
+              <div className="bg-white border border-gray-200 p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-4">
+                  Type de stockage
+                </h3>
+                {stats.storageTypeDistribution.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={stats.storageTypeDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {stats.storageTypeDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip content={<CustomTooltip />} />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        formatter={(value) => <span className="text-xs text-gray-600">{value}</span>}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-gray-400 text-sm">
+                    Aucune donnée
+                  </div>
+                )}
+              </div>
+
+              {/* Architecture Distribution */}
+              <div className="bg-white border border-gray-200 p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-4">
+                  Architecture
+                </h3>
+                {stats.architectureDistribution.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={stats.architectureDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {stats.architectureDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -422,17 +529,13 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Bar Chart - Répartition */}
+            {/* Virtualisation Chart */}
             <div className="bg-white border border-gray-200 p-4 mb-6">
               <h3 className="text-sm font-medium text-gray-700 mb-4">
-                Répartition globale
+                Support de la virtualisation
               </h3>
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={[
-                  { name: 'Avec ordinateur', value: stats.hasComputer },
-                  { name: 'Sans ordinateur', value: stats.noComputer },
-                  { name: 'Visiteurs uniques', value: stats.uniqueVisitors }
-                ]}>
+                <BarChart data={stats.virtualizationSupport}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
@@ -442,49 +545,77 @@ export default function AdminDashboard() {
               </ResponsiveContainer>
             </div>
 
-           {/* Tableau des réponses */}
-<div className="bg-white border border-gray-200 mb-6">
-  <div className="p-4 border-b border-gray-200">
-    <div className="flex items-center justify-between">
-      <h3 className="text-sm font-medium text-gray-700">
-        Toutes les réponses ({stats?.total || 0})
-      </h3>
-      <span className="text-xs text-gray-400">
-        {stats?.uniqueVisitors || 0} visiteurs uniques
-      </span>
-    </div>
-  </div>
-  
-  <div className="overflow-auto max-h-[600px]">
-    <table className="w-full">
-      <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
-        <tr>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase w-8"></th>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-            Date
-          </th>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-            Nom
-          </th>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-            Ordinateur
-          </th>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-            Type
-          </th>
-          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-            Plan
-          </th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-100">
-        {stats?.recentResponses.map((response) => (
-          <TableRow key={response.id} response={response} />
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
+            {/* Tableau des réponses */}
+            <div className="bg-white border border-gray-200 mb-6">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="text-sm font-medium text-gray-700">
+                  Dernières participations ({stats?.total || 0})
+                </h3>
+              </div>
+              
+              <div className="overflow-auto max-h-[600px]">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Date
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        CPU
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        RAM
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Stockage
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Architecture
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                        Virtualisation
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {stats?.recentResponses.map((response) => (
+                      <tr key={response.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                          {new Date(response.created_at).toLocaleString('fr-FR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {formatCpu(response.cpu_cores)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {formatRam(response.ram)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {response.storage_space} - {formatStorageType(response.storage_type)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {formatArchitecture(response.architecture)}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <span className={`px-2 py-0.5 text-xs border ${
+                            response.virtualization
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : 'bg-red-50 text-red-700 border-red-200'
+                          }`}>
+                            {response.virtualization ? 'Oui' : 'Non'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
             {/* Export Button */}
             <div className="flex justify-end">
@@ -501,99 +632,5 @@ export default function AdminDashboard() {
         )}
       </main>
     </div>
-  )
-}
-
-
-
-// Composant pour chaque ligne du tableau avec bouton + pour le commentaire
-const TableRow = ({ response }: { response: SurveyResponse }) => {
-  const [showComment, setShowComment] = useState(false)
-
-  const formatComputerType = (type: string): string => {
-    const types: Record<string, string> = {
-      'laptop_windows': 'Windows',
-      'laptop_mac': 'MacBook',
-      'laptop_linux': 'Linux',
-      'laptop_chrome': 'Chromebook',
-      'laptop_other': 'Autre'
-    }
-    return types[type] || type
-  }
-
-  const formatPlan = (plan: string): string => {
-    const plans: Record<string, string> = {
-      'yes_soon': 'Prochainement',
-      'yes_later': 'Plus tard',
-      'no': 'Pas prévu'
-    }
-    return plans[plan] || plan
-  }
-
-  const hasComment = response.without_computer_plan && response.without_computer_plan.trim().length > 0
-
-  return (
-    <>
-      <tr className="hover:bg-gray-50 group">
-        <td className="px-2 py-3">
-          {hasComment && (
-            <button
-              onClick={() => setShowComment(!showComment)}
-              className="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-100 rounded transition-all"
-              title={showComment ? "Masquer le commentaire" : "Voir le commentaire"}
-            >
-              <span className={`text-lg transform transition-transform ${showComment ? 'rotate-45' : ''}`}>
-                +
-              </span>
-            </button>
-          )}
-        </td>
-        <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
-          {new Date(response.created_at).toLocaleString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}
-        </td>
-        <td className="px-4 py-3 text-sm font-medium text-gray-900">
-          {response.student_name}
-        </td>
-        <td className="px-4 py-3 text-sm">
-          <span className={`px-2 py-0.5 text-xs border ${
-            response.has_computer
-              ? 'bg-green-50 text-green-700 border-green-200'
-              : 'bg-yellow-50 text-yellow-700 border-yellow-200'
-          }`}>
-            {response.has_computer ? 'Oui' : 'Non'}
-          </span>
-        </td>
-        <td className="px-4 py-3 text-sm text-gray-500">
-          {response.computer_type ? formatComputerType(response.computer_type) : '-'}
-        </td>
-        <td className="px-4 py-3 text-sm text-gray-500">
-          {response.plan_to_get_computer ? formatPlan(response.plan_to_get_computer) : '-'}
-        </td>
-      </tr>
-      
-      {/* Ligne de commentaire (affichée seulement si showComment est true) */}
-      {showComment && hasComment && (
-        <tr className="bg-gray-50 border-b border-gray-200">
-          <td colSpan={6} className="px-4 py-3">
-            <div className="ml-8 pl-4 border-l-2 border-blue-300">
-              <div className="flex items-start gap-2">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Commentaire :
-                </span>
-                <p className="text-sm text-gray-700 italic">
-                  "{response.without_computer_plan}"
-                </p>
-              </div>
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
   )
 }
