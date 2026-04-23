@@ -491,15 +491,15 @@ export default function FileDownloader({
       // Pour les PDF, on peut soit les télécharger, soit les ouvrir dans un nouvel onglet
       if (file.type === 'pdf') {
         // Option 1: Ouvrir dans un nouvel onglet
-        window.open(file.download_url, '_blank')
+        // window.open(file.download_url, '_blank')
         
         // Option 2: Télécharger directement (décommentez si vous préférez le téléchargement)
-        // const link = document.createElement('a')
-        // link.href = file.download_url
-        // link.download = file.name
-        // document.body.appendChild(link)
-        // link.click()
-        // document.body.removeChild(link)
+        const link = document.createElement('a')
+        link.href = file.download_url
+        link.download = file.name
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
         
         setDownloadProgress(100)
         onDownloadComplete?.(file)
