@@ -482,90 +482,168 @@ export default function FileDownloader({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const downloadFile = async (file: DownloadableFile) => {
-    try {
-      setDownloading(file.id)
-      setDownloadProgress(0)
-      onDownloadStart?.(file)
+  // const downloadFile = async (file: DownloadableFile) => {
+  //   try {
+  //     setDownloading(file.id)
+  //     setDownloadProgress(0)
+  //     onDownloadStart?.(file)
 
-      // Pour les PDF, on peut soit les télécharger, soit les ouvrir dans un nouvel onglet
-      if (file.type === 'pdf') {
-        // Option 1: Ouvrir dans un nouvel onglet
-        // window.open(file.download_url, '_blank')
+  //     // Pour les PDF, on peut soit les télécharger, soit les ouvrir dans un nouvel onglet
+  //     if (file.type === 'pdf') {
+  //       // Option 1: Ouvrir dans un nouvel onglet
+  //       // window.open(file.download_url, '_blank')
         
-        // Option 2: Télécharger directement (décommentez si vous préférez le téléchargement)
-        const link = document.createElement('a')
-        link.href = file.download_url
-        link.download = file.name
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+  //       // Option 2: Télécharger directement (décommentez si vous préférez le téléchargement)
+  //       const link = document.createElement('a')
+  //       link.href = file.download_url
+  //       link.download = file.name
+  //       document.body.appendChild(link)
+  //       link.click()
+  //       document.body.removeChild(link)
         
-        setDownloadProgress(100)
-        onDownloadComplete?.(file)
-        await logDownload(file)
-      } else {
-        // Pour APK et EXE, téléchargement avec progression
-        const response = await fetch(file.download_url)
+  //       setDownloadProgress(100)
+  //       onDownloadComplete?.(file)
+  //       await logDownload(file)
+  //     } else {
+  //       // Pour APK et EXE, téléchargement avec progression
+  //       const response = await fetch(file.download_url)
         
-        if (!response.ok) throw new Error('Échec du téléchargement')
+  //       if (!response.ok) throw new Error('Échec du téléchargement')
 
-        const contentLength = response.headers.get('content-length')
-        const total = contentLength ? parseInt(contentLength, 10) : 0
+  //       const contentLength = response.headers.get('content-length')
+  //       const total = contentLength ? parseInt(contentLength, 10) : 0
         
-        const reader = response.body?.getReader()
-        const chunks: Uint8Array[] = []
-        let received = 0
+  //       const reader = response.body?.getReader()
+  //       const chunks: Uint8Array[] = []
+  //       let received = 0
 
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read()
+  //       if (reader) {
+  //         while (true) {
+  //           const { done, value } = await reader.read()
             
-            if (done) break
+  //           if (done) break
             
-            chunks.push(value)
-            received += value.length
+  //           chunks.push(value)
+  //           received += value.length
             
-            if (total > 0) {
-              setDownloadProgress((received / total) * 100)
-            }
-          }
+  //           if (total > 0) {
+  //             setDownloadProgress((received / total) * 100)
+  //           }
+  //         }
+  //       }
+
+  //       // Créer le blob avec le bon typage
+  //       const blob = new Blob(chunks as BlobPart[])
+  //       const url = window.URL.createObjectURL(blob)
+  //       const a = document.createElement('a')
+  //       a.href = url
+  //       a.download = file.name
+  //       document.body.appendChild(a)
+  //       a.click()
+  //       window.URL.revokeObjectURL(url)
+  //       document.body.removeChild(a)
+
+  //       setDownloadProgress(100)
+  //       onDownloadComplete?.(file)
+  //       await logDownload(file)
+  //     }
+
+  //   } catch (err) {
+  //     console.error('Download error:', err)
+  //     setError('Erreur lors du téléchargement')
+  //     onError?.(err as Error)
+
+  //     // Fallback: Téléchargement direct si la méthode avec progression échoue
+  //     try {
+  //       window.open(file.download_url, '_blank')
+  //     } catch (fallbackErr) {
+  //       console.error('Fallback download failed:', fallbackErr)
+  //     }
+  //   } finally {
+  //     setTimeout(() => {
+  //       setDownloading(null)
+  //       setDownloadProgress(0)
+  //     }, 2000)
+  //   }
+  // }
+
+  // Dans le composant FileDownloader, remplacez la fonction downloadFile par celle-ci :
+
+const downloadFile = async (file: DownloadableFile) => {
+  try {
+    setDownloading(file.id)
+    setDownloadProgress(0)
+    onDownloadStart?.(file)
+
+    // Téléchargement avec progression pour TOUS les types de fichiers (y compris PDF)
+    const response = await fetch(file.download_url)
+    
+    if (!response.ok) throw new Error('Échec du téléchargement')
+
+    const contentLength = response.headers.get('content-length')
+    const total = contentLength ? parseInt(contentLength, 10) : 0
+    
+    const reader = response.body?.getReader()
+    const chunks: Uint8Array[] = []
+    let received = 0
+
+    if (reader) {
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+        
+        chunks.push(value)
+        received += value.length
+        
+        if (total > 0) {
+          setDownloadProgress((received / total) * 100)
         }
-
-        // Créer le blob avec le bon typage
-        const blob = new Blob(chunks as BlobPart[])
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = file.name
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-
-        setDownloadProgress(100)
-        onDownloadComplete?.(file)
-        await logDownload(file)
       }
-
-    } catch (err) {
-      console.error('Download error:', err)
-      setError('Erreur lors du téléchargement')
-      onError?.(err as Error)
-
-      // Fallback: Téléchargement direct si la méthode avec progression échoue
-      try {
-        window.open(file.download_url, '_blank')
-      } catch (fallbackErr) {
-        console.error('Fallback download failed:', fallbackErr)
-      }
-    } finally {
-      setTimeout(() => {
-        setDownloading(null)
-        setDownloadProgress(0)
-      }, 2000)
     }
+
+    // Créer le blob et déclencher le téléchargement
+    const blob = new Blob(chunks as BlobPart[])
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = file.name // Force le téléchargement avec le nom du fichier
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    setDownloadProgress(100)
+    onDownloadComplete?.(file)
+
+    // Log du téléchargement
+    await logDownload(file)
+
+  } catch (err) {
+    console.error('Download error:', err)
+    setError('Erreur lors du téléchargement')
+    onError?.(err as Error)
+
+    // Fallback: Téléchargement direct via window.open en dernier recours
+    try {
+      const link = document.createElement('a')
+      link.href = file.download_url
+      link.download = file.name
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (fallbackErr) {
+      console.error('Fallback download failed:', fallbackErr)
+      // Dernier recours : ouvrir dans un nouvel onglet
+      window.open(file.download_url, '_blank')
+    }
+  } finally {
+    setTimeout(() => {
+      setDownloading(null)
+      setDownloadProgress(0)
+    }, 2000)
   }
+}
 
   const logDownload = async (file: DownloadableFile) => {
     try {
