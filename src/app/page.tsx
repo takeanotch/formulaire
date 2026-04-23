@@ -699,7 +699,7 @@ export default function Home() {
       const result = await fp.get()
       const fingerprint = result.visitorId
 
-      const response = await fetch('/api/check-submission', {
+      const response = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fingerprint })
